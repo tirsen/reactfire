@@ -35,6 +35,7 @@
   var OBJECT_BINDING = 'object';
   var SNAPSHOT_BINDING = 'snapshot';
   var TRANSFORM_BINDING = 'transform';
+  var TRANSFORMS_BINDING = 'transforms';
 
   var now = Date.now || function () { new Date().getTime() };
 
@@ -381,6 +382,14 @@
       this.firebaseListeners[bindVar] = {
         value: firebaseRef.on('value', _snapshotValue.bind(this, bindVar, transform), handleError)
       };
+    } else if (bindingType == TRANSFORMS_BINDING) {
+      if (!transform) {
+        _throwError('bindAsTransforms must be passed a transform function.');
+      }
+      // Add listener for 'value' event
+      this.firebaseListeners[bindVar] = {
+        value: firebaseRef.on('value', _snapshotsValue.bind(this, bindVar, transform), handleError)
+      };
     } else {
       _throwError("Unknown binding type: " + bindingType);
     }
@@ -490,6 +499,22 @@
     bindAsTransform: function(firebaseRef, bindVar, transform, cancelCallback) {
       var bindPartial = _bind.bind(this);
       bindPartial(firebaseRef, bindVar, cancelCallback, transform, TRANSFORM_BINDING);
+    },
+
+    /**
+     * Creates a binding between a single Firebase path and multiple keys. The provided
+     * function should take a DataSnapshot and return an object which will be passed to
+     * setState.
+     * Idempotent: Called with the same ref and var will produce no effect, calling with
+     * a different ref will unbind the old binding and bind a new one.
+     *
+     * @param {Firebase} firebaseRef The Firebase ref whose data to bind.
+     * @param {function} transform DataSnapshot is run through this transform before binding, the value is passed directly to setState.
+     * @param {function} cancelCallback The Firebase reference's cancel callback.
+     */
+    bindAsTransforms: function(firebaseRef, transform, cancelCallback) {
+      var bindPartial = _bind.bind(this);
+      bindPartial(firebaseRef, bindVar, cancelCallback, transform, TRANSFORMS_BINDING);
     },
 
     /**
