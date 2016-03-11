@@ -73,7 +73,7 @@ You don't need to write any code for this to happen, it just works out of the bo
 
 ### `bindAsTransform`
 
-Sometimes you need to post-process a binding before it's usable in e.g. your `render()` method. You can do this in the `render()` method but if the post-processing is expensive it will make your it slow. In this case you can use `bindAsTransform` which works like `bindAsDataTransform` and also takes a function, when the data is loaded or changes the `DataSnapshot` is run through the function and the result is stored in the binding.
+Sometimes you need to post-process a binding before it's usable in e.g. your `render()` method. You can do this in the `render()` method but if the post-processing is expensive it will make your it slow. In this case you can use `bindAsTransform` which works like `bindAsDataSnapshot` and also takes a function, when the data is loaded or changes the `DataSnapshot` is run through the function and the result is stored in the binding. The result is cached so that the `render()` method can do as little work as possible.
 
 ```javascript
   bindAsTransform(firebaseRef, 'data',
