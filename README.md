@@ -57,19 +57,31 @@ render() {
 
 ### Component wide "cancel callback" (i.e. error reporting)
 
-You can have a error reporting callback on the entire component by overriding firebaseDidCancel.
+You can have a error reporting callback on the entire component by overriding firebaseDidCancel. Errors are also always logged to the console instead of being swallowed.
 
 ```javascript
   firebaseDidCancel(error) {
-      console.error(error);
+      this.setState({error: error});
   }
 ```
 
-### Debounced "child_added" callback
+### Debounced `child_added` callback
 
 If you have a really large array your render method is going to be called for each element. Render methods and virtual DOM diffing is fast in React but not this fast.
 
 You don't need to write any code for this to happen, it just works out of the box.
+
+### `bindAsTransform`
+
+Sometimes you need to post-process a binding before it's usable in e.g. your `render()` method. You can do this in the `render()` method but if the post-processing is expensive it will make your it slow. In this case you can use `bindAsTransform` which works like `bindAsDataTransform` and also takes a function, when the data is loaded or changes the `DataSnapshot` is run through the function and the result is stored in the binding.
+
+```javascript
+  bindAsTransform(firebaseRef, 'data',
+    dataSnapshot => {
+      // extract some interesting data from the dataSnapshot here.
+      return data;
+    }
+  );
 
 Original documentation follows...
 
