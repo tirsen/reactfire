@@ -82,6 +82,7 @@ Sometimes you need to post-process a binding before it's usable in e.g. your `re
       return data;
     }
   );
+```
 
 Original documentation follows...
 
