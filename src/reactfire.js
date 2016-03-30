@@ -33,6 +33,7 @@
 
   var ARRAY_BINDING = 'array';
   var OBJECT_BINDING = 'object';
+  var VALUE_BINDING = 'value';
   var SNAPSHOT_BINDING = 'snapshot';
   var TRANSFORM_BINDING = 'transform';
   var TRANSFORMS_BINDING = 'transforms';
@@ -182,7 +183,7 @@
   /*  BIND AS OBJECT LISTENERS  */
   /******************************/
   /**
-   * 'value' listener which updates the value of the bound state variable.
+   * 'value' listener which updates the value of the bound state variable as an object.
    *
    * @param {string} bindVar The state variable to which the data is being bound.
    * @param {Firebase.DataSnapshot} snapshot A snapshot of the data being bound.
@@ -192,6 +193,24 @@
     var value = snapshot.val();
 
     this.data[bindVar] = _createRecord(key, value);
+
+    this.firebaseLoaded[bindVar] = true;
+
+    this.setState(this.data);
+  }
+
+
+  /*****************************/
+  /*  BIND AS VALUE LISTENERS  */
+  /*****************************/
+  /**
+   * 'value' listener which updates the value of the bound state variable as a value.
+   *
+   * @param {string} bindVar The state variable to which the data is being bound.
+   * @param {Firebase.DataSnapshot} snapshot A snapshot of the data being bound.
+   */
+  function _valueValue(bindVar, snapshot) {
+    this.data[bindVar] = snapshot.val();
 
     this.firebaseLoaded[bindVar] = true;
 
@@ -374,6 +393,11 @@
       this.firebaseListeners[bindVar] = {
         value: firebaseRef.on('value', _objectValue.bind(this, bindVar), handleError)
       };
+    } else if (bindingType == VALUE_BINDING) {
+      // Add listener for 'value' event
+      this.firebaseListeners[bindVar] = {
+        value: firebaseRef.on('value', _valueValue.bind(this, bindVar), handleError)
+      };
     } else if (bindingType == SNAPSHOT_BINDING || bindingType == TRANSFORM_BINDING) {
       if (!transform) {
         transform = function(v) { return v; }
@@ -469,6 +493,21 @@
     bindAsObject: function(firebaseRef, bindVar, cancelCallback) {
       var bindPartial = _bind.bind(this);
       bindPartial(firebaseRef, bindVar, cancelCallback, null, OBJECT_BINDING);
+    },
+
+    /**
+     * Creates a binding between Firebase and the inputted bind variable as a value
+     * (i.e. a string or number or something as such).
+     * Idempotent: Called with the same ref and var will produce no effect, calling with
+     * a different ref will unbind the old binding and bind a new one.
+     *
+     * @param {Firebase} firebaseRef The Firebase ref whose data to bind.
+     * @param {string} bindVar The state variable to which to bind the data.
+     * @param {function} cancelCallback The Firebase reference's cancel callback.
+     */
+    bindAsValue: function(firebaseRef, bindVar, cancelCallback) {
+      var bindPartial = _bind.bind(this);
+      bindPartial(firebaseRef, bindVar, cancelCallback, null, VALUE_BINDING);
     },
 
     /**
